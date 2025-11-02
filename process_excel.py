@@ -158,6 +158,21 @@ def start(backup_path: str, report_path: str):
 
 if __name__ == "__main__":
     # 命令行支持：python process_excel.py [backup.xlsx] [1.xlsx]
-    backup_file = sys.argv[1] if len(sys.argv) > 1 else "backup.xlsx"
-    report_file = sys.argv[2] if len(sys.argv) > 2 else "1.xlsx"
-    start(backup_file, report_file)
+    import tkinter as tk
+    from tkinter import filedialog, messagebox
+
+    root = tk.Tk()
+    root.withdraw()
+
+    origin_file = filedialog.askopenfilename(title="请选择源文件", filetypes=[("Excel 文件", "*.xlsx")])
+    if not origin_file:
+        messagebox.showwarning("提示", "未选择源文件，已取消。")
+        sys.exit()
+
+    template_file = filedialog.askopenfilename(title="请选择模板文件 template .xlsx", filetypes=[("Excel 文件", "*.xlsx")])
+    if not template_file:
+        messagebox.showwarning("提示", "未选择模板文件，已取消。")
+        sys.exit()
+
+    start(template_file, origin_file)
+    messagebox.showinfo("完成", "Excel 数据处理完成！\n详细信息见 process.log。")
