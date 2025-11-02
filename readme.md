@@ -3,4 +3,4 @@
 `pip install openpyxl pyinstaller`
 
 ## 打包
-`pyinstaller -F --clean --noconfirm process_excel.py`
+`pyinstaller -F -w process_excel.py`
