@@ -30,15 +30,15 @@ def start(target_path: str, origin_path: str):
         log(f"❌ 找不到目标文件: {target_path}")
         return
 
-    wb_backup = load_workbook(target_path)
-    wb_report = load_workbook(origin_path, data_only=True)
+    wb_target = load_workbook(target_path)
+    wb_origin = load_workbook(origin_path, data_only=True)
 
     # === 1. 启动条件检查 ===
-    if "Sheet1" not in wb_backup.sheetnames:
+    if "Sheet1" not in wb_target.sheetnames:
         log("❌ 目标文件中没有 Sheet1")
         return
 
-    ws_sheet1 = wb_backup["Sheet1"]
+    ws_sheet1 = wb_target["Sheet1"]
     check_value = ws_sheet1["F29"].value
 
     # if check_value not in ["李春宁", "刘文"]:
@@ -48,11 +48,11 @@ def start(target_path: str, origin_path: str):
     #     log(f"✅ 启动条件通过: {check_value}")
 
     # === 2. 获取报告表 ===
-    if "PCDmisExcel1" not in wb_report.sheetnames:
+    if "PCDmisExcel1" not in wb_origin.sheetnames:
         log("❌ 报告文件中找不到 PCDmisExcel1 工作表")
         return
 
-    ws_report = wb_report["PCDmisExcel1"]
+    ws_report = wb_origin["PCDmisExcel1"]
     log("✅ 找到 PCDmisExcel1")
 
     # === 3. 读取基础数据 C/F/G/D/A ===
@@ -75,7 +75,7 @@ def start(target_path: str, origin_path: str):
             arr_backup[i][4] = "CMM"
 
     # === 4. 写入 A8:E27 ===
-    for ws in wb_backup.worksheets:
+    for ws in wb_target.worksheets:
         for r in range(8, 28):
             for c in range(1, 6):
                 ws.cell(r, c, None)
@@ -86,14 +86,14 @@ def start(target_path: str, origin_path: str):
     log("✅ 写入 A8:E27 完成")
 
     # === 5. 收集报告文件中的 PCDmisExcel 工作表 ===
-    pcd_sheets = [s for s in wb_report.sheetnames if s.startswith("PCDmisExcel")]
+    pcd_sheets = [s for s in wb_origin.sheetnames if s.startswith("PCDmisExcel")]
     pcd_sheets = pcd_sheets[:200]
     log(f"共找到 {len(pcd_sheets)} 个 PCDmisExcel 工作表")
 
     pcd_data = {}
 
     for idx, sheet_name in enumerate(pcd_sheets):
-        ws = wb_report[sheet_name]
+        ws = wb_origin[sheet_name]
 
         def get_last_row(col):
             for row in range(20, 0, -1):
@@ -124,7 +124,7 @@ def start(target_path: str, origin_path: str):
         log(f"读取 {sheet_name}: {len(data_vals)} 行, 使用列 {data_col}")
 
     # === 6. 写入目标文件 F8:Y27 ===
-    for ws in wb_backup.worksheets:
+    for ws in wb_target.worksheets:
         for r in range(8, 28):
             for c in range(6, 26):
                 ws.cell(r, c, None)
@@ -132,8 +132,8 @@ def start(target_path: str, origin_path: str):
     for i, (sheet_name, values) in enumerate(pcd_data.items()):
         backup_index = i // 20
         backup_col_offset = (i % 20) + 6
-        if backup_index < len(wb_backup.worksheets):
-            ws_target = wb_backup.worksheets[backup_index]
+        if backup_index < len(wb_target.worksheets):
+            ws_target = wb_target.worksheets[backup_index]
             for r, val in enumerate(values[:20]):
                 ws_target.cell(r + 8, backup_col_offset, val)
 
@@ -141,19 +141,19 @@ def start(target_path: str, origin_path: str):
 
     # === 7. 删除空白工作表 ===
     sheets_to_delete = []
-    for ws in wb_backup.worksheets:
+    for ws in wb_target.worksheets:
         if ws["F8"].value in (None, "", "###EMPTY###"):
             sheets_to_delete.append(ws.title)
 
-    if len(sheets_to_delete) < len(wb_backup.worksheets):
+    if len(sheets_to_delete) < len(wb_target.worksheets):
         for name in sheets_to_delete:
-            del wb_backup[name]
+            del wb_target[name]
         log(f"🗑️ 删除空白工作表: {sheets_to_delete}")
     else:
         log("⚠️ 所有工作表的F8都为空，至少保留一个工作表！")
 
     # === 8. 保存结果 ===
-    wb_backup.save(target_path)
+    wb_target.save(target_path)
     log(f"✅ 数据处理完成！结果保存在：{target_path}")
     log("=== 执行结束 ===\n")
 
