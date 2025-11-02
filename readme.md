@@ -5,5 +5,8 @@ windows11、python3.14
  安装依赖
 `pip install openpyxl pyinstaller`
 
+## 运行
+`python process_excel.py`
+
 ## 打包
 `pyinstaller -F -w process_excel.py`
