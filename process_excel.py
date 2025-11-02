@@ -152,7 +152,10 @@ def start(target_path: str, origin_path: str):
     else:
         log("⚠️ 所有工作表的F8都为空，至少保留一个工作表！")
 
-    # === 8. 保存结果 ===
+    # === 8. 更新 检验日期
+    ws_sheet1['C4'] = datetime.now().strftime("%Y.%m.%d")
+
+    # === 9. 保存结果 ===
     wb_target.save(target_path)
     log(f"✅ 数据处理完成！结果保存在：{target_path}")
     log("=== 执行结束 ===\n")
