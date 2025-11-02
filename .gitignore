@@ -3,3 +3,6 @@
 *.iml
 *.xlsx
 *.xlsm
+/process_excel.spec
+/dist/
+/build/
