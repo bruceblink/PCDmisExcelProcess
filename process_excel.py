@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 from openpyxl import load_workbook
 from datetime import datetime
 
@@ -16,24 +17,25 @@ def get_values(ws, col, max_rows=20):
         vals.append(ws[f"{col}{i}"].value)
     return vals
 
-def start(backup_path: str, report_path: str):
+def start(target_path: str, origin_path: str):
     log(f"=== 开始执行 ===")
-    log(f"备份文件: {backup_path}")
-    log(f"报告文件: {report_path}")
+    log(f"源文件: {origin_path}")
+    log(f"目标文件: {target_path}")
 
-    if not os.path.exists(backup_path):
-        log(f"❌ 找不到备份文件: {backup_path}")
-        return
-    if not os.path.exists(report_path):
-        log(f"❌ 找不到报告文件: {report_path}")
+    if not os.path.exists(origin_path):
+        log(f"❌ 找不到源文件: {origin_path}")
         return
 
-    wb_backup = load_workbook(backup_path)
-    wb_report = load_workbook(report_path, data_only=True)
+    if not os.path.exists(target_path):
+        log(f"❌ 找不到目标文件: {target_path}")
+        return
+
+    wb_backup = load_workbook(target_path)
+    wb_report = load_workbook(origin_path, data_only=True)
 
     # === 1. 启动条件检查 ===
     if "Sheet1" not in wb_backup.sheetnames:
-        log("❌ 备份文件中没有 Sheet1")
+        log("❌ 目标文件中没有 Sheet1")
         return
 
     ws_sheet1 = wb_backup["Sheet1"]
@@ -121,7 +123,7 @@ def start(backup_path: str, report_path: str):
         pcd_data[sheet_name] = data_vals
         log(f"读取 {sheet_name}: {len(data_vals)} 行, 使用列 {data_col}")
 
-    # === 6. 写入备份文件 F8:Y27 ===
+    # === 6. 写入目标文件 F8:Y27 ===
     for ws in wb_backup.worksheets:
         for r in range(8, 28):
             for c in range(6, 26):
@@ -151,13 +153,12 @@ def start(backup_path: str, report_path: str):
         log("⚠️ 所有工作表的F8都为空，至少保留一个工作表！")
 
     # === 8. 保存结果 ===
-    wb_backup.save(backup_path)
-    log(f"✅ 数据处理完成！共处理了 {len(pcd_sheets)} 个 PCDmisExcel 工作表。")
+    wb_backup.save(target_path)
+    log(f"✅ 数据处理完成！结果保存在：{target_path}")
     log("=== 执行结束 ===\n")
 
 
 if __name__ == "__main__":
-    # 命令行支持：python process_excel.py [backup.xlsx] [1.xlsx]
     import tkinter as tk
     from tkinter import filedialog, messagebox
 
@@ -169,10 +170,21 @@ if __name__ == "__main__":
         messagebox.showwarning("提示", "未选择源文件，已取消。")
         sys.exit()
 
-    template_file = filedialog.askopenfilename(title="请选择模板文件 template .xlsx", filetypes=[("Excel 文件", "*.xlsx")])
+    template_file = filedialog.askopenfilename(title="请选择模板文件 template.xlsx", filetypes=[("Excel 文件", "*.xlsx")])
     if not template_file:
         messagebox.showwarning("提示", "未选择模板文件，已取消。")
         sys.exit()
 
-    start(template_file, origin_file)
-    messagebox.showinfo("完成", "Excel 数据处理完成！\n详细信息见 process.log。")
+    # === ✅ 在模板文件的基础上复制一个新目标文件 ===
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    target_file = os.path.join(
+        os.path.dirname(template_file),
+        f"output_{timestamp}.xlsx"
+    )
+    shutil.copyfile(template_file, target_file)
+    log(f"📂 已复制模板文件为新目标文件: {target_file}")
+
+    # === 在新文件上执行处理 ===
+    start(target_file, origin_file)
+
+    messagebox.showinfo("完成", f"Excel 数据处理完成！\n结果文件：\n{os.path.basename(target_file)}\n详细信息见 process.log。")
