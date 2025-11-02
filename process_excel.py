@@ -181,7 +181,7 @@ if __name__ == "__main__":
     # === ✅ 在模板文件的基础上复制一个新目标文件 ===
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     target_file = os.path.join(
-        os.path.dirname(template_file),
+        os.getcwd(),  # 当前程序运行目录
         f"output_{timestamp}.xlsx"
     )
     shutil.copyfile(template_file, target_file)
