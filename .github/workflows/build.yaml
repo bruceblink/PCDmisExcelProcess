@@ -1,0 +1,58 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # 手动触发
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # 1️⃣ 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ 设置 Python 环境
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'  # 你脚本兼容的版本
+
+      # 3️⃣ 安装依赖
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller openpyxl
+
+      # 4️⃣ 打包为 EXE
+      - name: Build EXE with PyInstaller
+        run: |
+          pyinstaller --onefile --noconsole process_excel.py
+
+      # 5️⃣ 上传生成的 EXE 文件（dist/process_excel.exe）
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: process_excel_exe
+          path: dist/process_excel.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')  # 当打tag时自动发布
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: process_excel_exe
+          path: .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: process_excel.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
