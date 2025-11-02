@@ -41,11 +41,11 @@ def start(target_path: str, origin_path: str):
     ws_sheet1 = wb_backup["Sheet1"]
     check_value = ws_sheet1["F29"].value
 
-    if check_value not in ["李春宁", "刘文"]:
-        log("⚠️ 启动条件不满足：Sheet1!F29 不是 '李春宁' 或 '刘文'")
-        return
-    else:
-        log(f"✅ 启动条件通过: {check_value}")
+    # if check_value not in ["李春宁", "刘文"]:
+    #     log("⚠️ 启动条件不满足：Sheet1!F29 不是 '李春宁' 或 '刘文'")
+    #     return
+    # else:
+    #     log(f"✅ 启动条件通过: {check_value}")
 
     # === 2. 获取报告表 ===
     if "PCDmisExcel1" not in wb_report.sheetnames:
