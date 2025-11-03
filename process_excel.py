@@ -62,6 +62,16 @@ def start(target_path: str, origin_path: str):
     ws_report = wb_origin["PCDmisExcel1"]
     log("✅ 找到 PCDmisExcel1")
 
+    # 计算文件行数 计算 A 列有效数据行数
+    a_values = [ws_report[f"A{i}"].value for i in range(1, ws_report.max_row + 1)]
+    a_count = sum(1 for v in a_values if v not in (None, ""))
+
+    # 如果超过20行，则弹窗提示
+    if a_count > 20:
+        messagebox.showwarning("提示", f"A列数据行数超过20行，当前行数: {a_count}")
+        log("❌程序退出")
+        return
+
     # === 3. 读取基础数据 C/F/G/D/A ===
     dataC = get_values(ws_report, "C")
     dataF = get_values(ws_report, "F")
@@ -188,6 +198,7 @@ def start(target_path: str, origin_path: str):
     wb_target.save(target_path)
     log(f"✅ 数据处理完成！结果保存在：{target_path}")
     log("=== 执行结束 ===\n")
+    messagebox.showinfo("完成", f"Excel 数据处理完成！\n结果文件：\n{target_file}\n程序运行的详细信息见 process.log。")
 
 
 if __name__ == "__main__":
@@ -218,5 +229,3 @@ if __name__ == "__main__":
 
     # === 在新文件上执行处理 ===
     start(target_file, origin_file)
-
-    messagebox.showinfo("完成", f"Excel 数据处理完成！\n结果文件：\n{target_file}\n程序运行的详细信息见 process.log。")
