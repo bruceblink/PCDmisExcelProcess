@@ -123,7 +123,8 @@ def start(target_path: str, origin_path: str):
             try:
                 if val not in (None, ""):
                     sumH += float(val)
-            except Exception:
+            except Exception as e:
+                log(e)
                 pass
 
         data_col = "I" if sumH == 0 else "H"
@@ -150,17 +151,17 @@ def start(target_path: str, origin_path: str):
             for r, val in enumerate(values[:20]):
                 target_cell = ws_target.cell(r + 8, backup_col_offset, val)
 
-                # 获取源文件对应的 F/G/I 列值
-                f_val = ws_source[f"F{r+1}"].value  # 正公差
-                g_val = ws_source[f"G{r+1}"].value  # 负公差
-                i_val = ws_source[f"I{r+1}"].value  # 检查值
-
+                # 获取源文件对应的 F/G/I 列值， 转换成float
+                f_val = safe_float(ws_source[f"F{r+1}"].value, default=0.0) # 正公差
+                g_val = safe_float(ws_source[f"G{r+1}"].value, default=0.0) # 负公差
+                i_val = safe_float(ws_source[f"I{r+1}"].value, default=0.0) # 检查值
                 try:
                     if i_val is not None:
                         # 大于正公差 或者小于负公差，说明超出公差范围，填充标记为红色
                         if (g_val is not None and i_val > f_val) or (f_val is not None and i_val < g_val):
                             target_cell.fill = red_fill
-                except Exception:
+                except Exception as e:
+                    log(e)
                     pass
 
     log("✅ 写入 F8:Y27 完成并应用红色填充")
