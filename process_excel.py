@@ -2,6 +2,7 @@ import sys
 import os
 import shutil
 from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
 from datetime import datetime
 
 def log(msg):
@@ -39,7 +40,7 @@ def start(target_path: str, origin_path: str):
         return
 
     ws_sheet1 = wb_target["Sheet1"]
-    check_value = ws_sheet1["F29"].value
+    # check_value = ws_sheet1["F29"].value
 
     # if check_value not in ["李春宁", "刘文"]:
     #     log("⚠️ 启动条件不满足：Sheet1!F29 不是 '李春宁' 或 '刘文'")
@@ -123,21 +124,38 @@ def start(target_path: str, origin_path: str):
         pcd_data[sheet_name] = data_vals
         log(f"读取 {sheet_name}: {len(data_vals)} 行, 使用列 {data_col}")
 
-    # === 6. 写入目标文件 F8:Y27 ===
+    # === 6. 写入目标文件 F8:Y27 并填充红色 ===
+    red_fill = PatternFill(start_color="FFFF0000", end_color="FFFF0000", fill_type="solid")
+
     for ws in wb_target.worksheets:
         for r in range(8, 28):
             for c in range(6, 26):
                 ws.cell(r, c, None)
+                ws.cell(r, c).fill = PatternFill()  # 清空原有填充
 
     for i, (sheet_name, values) in enumerate(pcd_data.items()):
         backup_index = i // 20
         backup_col_offset = (i % 20) + 6
         if backup_index < len(wb_target.worksheets):
             ws_target = wb_target.worksheets[backup_index]
+            ws_source = wb_origin[sheet_name]
             for r, val in enumerate(values[:20]):
-                ws_target.cell(r + 8, backup_col_offset, val)
+                target_cell = ws_target.cell(r + 8, backup_col_offset, val)
 
-    log("✅ 写入 F8:Y27 完成")
+                # 获取源文件对应的 F/G/I 列值
+                f_val = ws_source[f"F{r+1}"].value  # 正公差
+                g_val = ws_source[f"G{r+1}"].value  # 负公差
+                i_val = ws_source[f"I{r+1}"].value  # 检查值
+
+                try:
+                    if i_val is not None:
+                        # 大于正公差 或者小于负公差，说明超出公差范围，填充标记为红色
+                        if (g_val is not None and i_val > f_val) or (f_val is not None and i_val < g_val):
+                            target_cell.fill = red_fill
+                except Exception:
+                    pass
+
+    log("✅ 写入 F8:Y27 完成并应用红色填充")
 
     # === 7. 删除空白工作表 ===
     sheets_to_delete = []
@@ -152,7 +170,7 @@ def start(target_path: str, origin_path: str):
     else:
         log("⚠️ 所有工作表的F8都为空，至少保留一个工作表！")
 
-    # === 8. 更新 检验日期
+    # === 8. 更新 检验日期 ===
     ws_sheet1['C4'] = datetime.now().strftime("%Y.%m.%d")
 
     # === 9. 保存结果 ===
@@ -178,7 +196,7 @@ if __name__ == "__main__":
         messagebox.showwarning("提示", "未选择模板文件，已取消。")
         sys.exit()
 
-    # === ✅ 在模板文件的基础上复制一个新目标文件 ===
+    # === ✅ 在当前运行目录生成目标文件 ===
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     target_file = os.path.join(
         os.getcwd(),  # 当前程序运行目录
