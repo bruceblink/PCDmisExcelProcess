@@ -47,7 +47,7 @@ def start(target_path: str, origin_path: str):
     # else:
     #     log(f"✅ 启动条件通过: {check_value}")
 
-    # === 2. 获取报告表 ===
+    # === 2. 获取源文件的报告表数据 ===
     if "PCDmisExcel1" not in wb_origin.sheetnames:
         log("❌ 报告文件中找不到 PCDmisExcel1 工作表")
         return
@@ -85,10 +85,10 @@ def start(target_path: str, origin_path: str):
 
     log("✅ 写入 A8:E27 完成")
 
-    # === 5. 收集报告文件中的 PCDmisExcel 工作表 ===
+    # === 5. 收集源文件中的 PCDmisExcel 工作表 ===
     pcd_sheets = [s for s in wb_origin.sheetnames if s.startswith("PCDmisExcel")]
     pcd_sheets = pcd_sheets[:200]
-    log(f"共找到 {len(pcd_sheets)} 个 PCDmisExcel 工作表")
+    log(f"源文件中共找到 {len(pcd_sheets)} 个 PCDmisExcel 工作表")
 
     pcd_data = {}
 
