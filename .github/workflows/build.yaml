@@ -31,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'  # 你脚本兼容的版本
+          python-version: '3.8'  # 你脚本兼容的版本
 
       # 3️⃣ 安装依赖
       - name: Install dependencies
