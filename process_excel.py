@@ -61,18 +61,18 @@ def start(target_path: str, origin_path: str):
     dataG = get_values(ws_report, "G")
     dataD = get_values(ws_report, "D")
     dataA = get_values(ws_report, "A")
-
-    arr_backup = [["" for _ in range(5)] for _ in range(20)]
+    # 定义写入目标文件的数据
+    arr_target = [["" for _ in range(5)] for _ in range(20)]
     for i in range(20):
         c, f, g, d, a = dataC[i], dataF[i], dataG[i], dataD[i], dataA[i]
         if c is None and f is None and g is None and d is None and a is None:
             continue
-        arr_backup[i][0] = c
-        arr_backup[i][2] = f
-        arr_backup[i][3] = g
-        arr_backup[i][1] = a if (d == 0 or d is None) else d
+        arr_target[i][0] = c
+        arr_target[i][2] = f
+        arr_target[i][3] = g
+        arr_target[i][1] = a if (d == 0 or d is None) else d
         if g not in (None, ""):
-            arr_backup[i][4] = "CMM"
+            arr_target[i][4] = "CMM"
 
     # === 4. 写入 A8:E27 ===
     for ws in wb_target.worksheets:
@@ -81,7 +81,7 @@ def start(target_path: str, origin_path: str):
                 ws.cell(r, c, None)
         for r in range(20):
             for c in range(5):
-                ws.cell(r + 8, c + 1, arr_backup[r][c])
+                ws.cell(r + 8, c + 1, arr_target[r][c])
 
     log("✅ 写入 A8:E27 完成")
 
