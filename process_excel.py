@@ -190,4 +190,4 @@ if __name__ == "__main__":
     # === 在新文件上执行处理 ===
     start(target_file, origin_file)
 
-    messagebox.showinfo("完成", f"Excel 数据处理完成！\n结果文件：\n{os.path.basename(target_file)}\n详细信息见 process.log。")
+    messagebox.showinfo("完成", f"Excel 数据处理完成！\n结果文件：\n{target_file}\n程序运行的详细信息见 process.log。")
