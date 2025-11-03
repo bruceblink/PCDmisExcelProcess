@@ -18,6 +18,12 @@ def get_values(ws, col, max_rows=20):
         vals.append(ws[f"{col}{i}"].value)
     return vals
 
+def safe_float(s, default=None):
+    try:
+        return float(s)
+    except (ValueError, TypeError):
+        return default
+
 def start(target_path: str, origin_path: str):
     log(f"=== 开始执行 ===")
     log(f"源文件: {origin_path}")
@@ -71,7 +77,9 @@ def start(target_path: str, origin_path: str):
         arr_target[i][0] = c
         arr_target[i][2] = f
         arr_target[i][3] = g
-        arr_target[i][1] = a if (d == 0 or d is None) else d
+        # 将D列的字符串安全抓换成数字
+        d_num = safe_float(d, default=0.0)
+        arr_target[i][1] = a if (d_num == 0) else d  # 默认情况下取d列的值，如果D列为0则取a列
         if g not in (None, ""):
             arr_target[i][4] = "CMM"
 
