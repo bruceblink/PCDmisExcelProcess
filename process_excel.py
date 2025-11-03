@@ -75,8 +75,8 @@ def start(target_path: str, origin_path: str):
         if c is None and f is None and g is None and d is None and a is None:
             continue
         arr_target[i][0] = c
-        arr_target[i][2] = f
-        arr_target[i][3] = g
+        arr_target[i][2] = safe_float(f, default=0.0) # 目标文件中的正公差 转成数字
+        arr_target[i][3] = safe_float(g, default=0.0) # 目标文件中的负公差 转成数字
         # 将D列的字符串安全抓换成数字
         d_num = safe_float(d, default=0.0)
         arr_target[i][1] = a if (d_num == 0) else d  # 默认情况下取d列的值，如果D列为0则取a列
@@ -149,7 +149,9 @@ def start(target_path: str, origin_path: str):
             ws_target = wb_target.worksheets[backup_index]
             ws_source = wb_origin[sheet_name]
             for r, val in enumerate(values[:20]):
-                target_cell = ws_target.cell(r + 8, backup_col_offset, val)
+                # 转换成数字类型写入
+                num_val = safe_float(val)
+                target_cell = ws_target.cell(r + 8, backup_col_offset, num_val)
 
                 # 获取源文件对应的 F/G/I 列值， 转换成float
                 f_val = safe_float(ws_source[f"F{r+1}"].value, default=0.0) # 正公差
